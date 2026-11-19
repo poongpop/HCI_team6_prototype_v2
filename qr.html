@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시연용 QR 스티커 | HCI 6조</title>
+<style>
+  body { margin: 0; background: #f4f6fa; color: #162342; font-family: 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  .note { font-size: 13px; color: #5f6b85; line-height: 1.6; margin: 0; }
+  .btn { margin-top: 12px; border: 0; background: #173886; color: #fff; border-radius: 10px; padding: 12px 18px; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+  .sticker { background: #fff; border: 2px solid #173886; border-radius: 16px; padding: 16px; text-align: center; break-inside: avoid; }
+  .sticker .t { font-weight: 850; color: #173886; font-size: 16px; }
+  .sticker .s { font-size: 12px; color: #5f6b85; margin: 4px 0 10px; }
+  .sticker .q { width: 170px; height: 170px; margin: 0 auto; }
+  .sticker .q img, .sticker .q canvas { width: 170px !important; height: 170px !important; }
+  .sticker .car { font-size: 13px; color: #36425e; margin-top: 10px; font-weight: 700; }
+  .sticker a { display: block; font-size: 11px; margin-top: 8px; word-break: break-all; color: #7a869d; }
+  @media print { .noprint { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="noprint">
+    <h1>시연용 QR 스티커</h1>
+    <p class="note">칸마다 QR코드가 한 장씩 있어요. QR 주소는 이 페이지가 열린 주소를 기준으로 만들어지니, GitHub Pages에 올린 뒤 이 페이지를 열어 인쇄하세요.<br>
+    평가 때는 찍으면 참가자 코드 입력 화면이 먼저 나와요. 기록 없이 시연만 하려면 주소 끝에 <b>&amp;study=off</b>를 붙이세요.</p>
+    <button class="btn" onclick="print()">인쇄하기</button>
+  </div>
+  <div class="sheet" id="sheet"></div>
+</main>
+<script src="assets/config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  const base = location.href.replace(/qr\.html.*$/, '');
+  const sheet = document.getElementById('sheet');
+  Object.entries(CARS).forEach(([car, c]) => {
+    const url = base + qs(car);
+    const el = document.createElement('div');
+    el.className = 'sticker';
+    el.innerHTML = `<div class="t">덥거나 추우신가요?</div><div class="s">QR을 찍으면 이 칸에서 바로 민원을 접수할 수 있어요</div><div class="q"></div>
+      <div class="car">${c.line}호선 ${car}호차 · ${c.pos}번째 칸</div>
+      <a class="noprint" href="${url}">${url}</a>`;
+    sheet.appendChild(el);
+    try { new QRCode(el.querySelector('.q'), { text: url, width: 340, height: 340, correctLevel: QRCode.CorrectLevel.M }); }
+    catch (e) { el.querySelector('.q').textContent = 'QR 생성 실패 (인터넷 연결 확인)'; }
+  });
+</script>
+</body>
+</html>
