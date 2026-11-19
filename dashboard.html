@@ -1,20 +1,232 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HCI 6조 · 연구자 대시보드</title>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HCI 6조 · 평가 대시보드</title>
 <style>
-:root{--navy:#142f7c;--blue:#2454c8;--ink:#152646;--muted:#64748b;--line:#dce4f2;--pale:#edf3ff}*{box-sizing:border-box}body{background:#f3f6fc;color:var(--ink);margin:0;font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer}.head{background:linear-gradient(105deg,#132d78,#3154be);color:#fff;padding:30px max(20px,calc((100vw - 1120px)/2))}.head small{opacity:.8;font-weight:750}.head h1{margin:8px 0 4px;font-size:28px}.head p{margin:0;font-size:13px;opacity:.85}.wrap{max-width:1120px;margin:23px auto 60px;padding:0 18px}.toolbar{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 18px}.btn{border:1px solid #cdd9f0;border-radius:10px;background:white;color:#203a7c;padding:10px 14px;font-weight:800;font-size:13px}.btn.primary{background:#1743a5;color:white;border-color:#1743a5}.btn.red{color:#b22e42}.hint{font-size:12px;color:var(--muted);margin:0 0 18px;line-height:1.7}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:17px}.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:19px}.stat small{display:block;color:var(--muted);font-weight:750}.stat strong{display:block;font-size:27px;color:var(--navy);margin-top:11px}.panel{background:white;border:1px solid var(--line);border-radius:17px;padding:20px;margin:15px 0;overflow:auto}.panel h2{margin:0 0 15px;font-size:19px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px;text-align:left;font-size:13px}th,td{border-bottom:1px solid #e7ecf5;padding:12px 9px;vertical-align:middle}th{font-size:12px;color:#5f7192;background:#f7f9fd}tbody tr:hover{background:#f7faff}.link{border:0;background:#ebf1ff;color:#2147a5;border-radius:8px;font-weight:750;padding:7px 10px}.good{color:#15835a;font-weight:850}.bad{color:#ae3d48;font-weight:850}.barline{display:flex;align-items:center;gap:10px;margin:11px 0;font-size:13px}.barname{width:100px;flex:none}.bartrack{height:15px;flex:1;background:#e7eefb;border-radius:10px;overflow:hidden}.barfill{height:100%;background:linear-gradient(90deg,#2854c2,#6f91e9);border-radius:10px}.barvalue{width:73px;text-align:right;color:#596b87}#details{display:none}#details.show{display:block}.tag{display:inline-flex;padding:5px 9px;border-radius:8px;background:#edf3ff;color:#2347a1;font-size:12px;font-weight:750}.eventlist{max-height:330px;overflow:auto}.event{display:grid;grid-template-columns:90px 120px 1fr;gap:9px;padding:11px 0;border-bottom:1px solid #e9edf5;font-size:12px}.event time{color:#6a7893}.empty{text-align:center;color:#71819a;padding:30px}.flex{display:flex;align-items:center;justify-content:space-between;gap:15px}.notice{background:#fff9eb;color:#7c5d15;padding:14px;border-radius:12px;line-height:1.6;font-size:12px}.clicks{display:flex;gap:9px;flex-wrap:wrap}.clickpill{background:#eaf0ff;border:1px solid #d4e1ff;color:#2346a0;padding:7px 10px;border-radius:10px;font-size:12px}input[type=file]{display:none}@media(max-width:680px){.stats{grid-template-columns:1fr 1fr}.stat{padding:13px}.head h1{font-size:22px}.event{grid-template-columns:62px 78px 1fr}}
-</style><script src="assets/config.js"></script></head><body>
-<header class="head"><small>HCI 6조 · 지하철 QR 민원신고 프로토타입</small><h1>UX 사용성 평가 대시보드</h1><p>참가자별 클릭 · 화면별 체류시간 · 과업 성공률을 확인하는 연구자 전용 화면 · <a href="records.html" style="color:#fff">접수 기록 보기</a></p></header>
-<div class="wrap"><div class="toolbar"><button class="btn primary" id="refresh">↻ 기록 새로고침</button><input id="token" class="btn" style="width:150px;font-weight:600" placeholder="수집 서버 비밀번호" autocomplete="off"><button class="btn primary" id="pull">☁ 수집 서버에서 불러오기</button><button class="btn" id="exportCsv">CSV 내보내기</button><button class="btn" id="exportJson">전체 JSON 내보내기</button><label class="btn" for="importFile" style="cursor:pointer">JSON 기록 가져오기</label><input type="file" id="importFile" accept=".json,application/json" multiple><button class="btn red" id="erase">기록 전체 삭제</button></div><p class="hint">수집 서버(구글 시트)가 연결되어 있으면 비밀번호를 넣고 '수집 서버에서 불러오기'를 누르면 모든 기기의 기록을 가져옵니다. 같은 브라우저·같은 주소에서 진행한 참가자 테스트는 자동 집계됩니다. 다른 휴대폰에서 수집한 기록은 참가자 화면의 '평가 기록 저장' 버튼으로 JSON을 받은 뒤 여기로 가져오세요. 접수한 민원 내용과 참가자가 입력한 글도 함께 기록됩니다.</p>
-<div class="stats"><div class="stat"><small>전체 테스트</small><strong id="total">0</strong></div><div class="stat"><small>완료율</small><strong id="rate">—</strong></div><div class="stat"><small>평균 소요시간 (완료자)</small><strong id="avg">—</strong></div><div class="stat"><small>평균 클릭 횟수</small><strong id="clickavg">—</strong></div></div>
-<section class="panel"><h2>참가자 기록</h2><div class="table-wrap"><table><thead><tr><th>참가자</th><th>칸</th><th>시작 시각</th><th>결과</th><th>접수 내용</th><th>소요시간</th><th>클릭</th><th>방문 화면</th><th>상세</th></tr></thead><tbody id="bodyRows"></tbody></table></div></section>
-<section class="panel"><h2>화면별 평균 체류시간</h2><div id="screenBars" class="empty">수집된 기록이 없습니다.</div></section>
-<section class="panel"><h2>자주 클릭한 기능</h2><div class="clicks" id="topClicks"></div></section>
-<section class="panel" id="details"><div class="flex"><h2 id="detailTitle">참가자 상세</h2><button class="btn" id="closeDetail">닫기</button></div><div id="detailSummary"></div><h3 style="font-size:15px;margin-top:20px">시간순 행동 기록</h3><div class="eventlist" id="detailEvents"></div></section>
-<div class="notice">※ 과업 완료는 시연용 '접수 완료' 화면 도달 기준입니다. 수집 서버를 연결하지 않으면 기록은 각 기기의 브라우저 저장소에만 보관됩니다. 그 경우 참가자 화면의 'JSON 저장' 파일을 'JSON 기록 가져오기'로 합쳐 주세요.</div></div>
+:root{--navy:#142f7c;--blue:#2454c8;--ink:#152646;--muted:#64748b;--line:#dce4f2;--pale:#edf3ff;--good:#15835a;--bad:#ae3d48}
+*{box-sizing:border-box}
+body{background:#f3f6fc;color:var(--ink);margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.head{background:linear-gradient(105deg,#132d78,#3154be);color:#fff;padding:28px max(20px,calc((100vw - 1200px)/2))}
+.head small{opacity:.8;font-weight:750}.head h1{margin:8px 0 4px;font-size:27px}.head p{margin:0;font-size:13px;opacity:.85}
+.wrap{max-width:1200px;margin:22px auto 60px;padding:0 18px}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:16px}
+.btn,.inp,select{border:1px solid #cdd9f0;border-radius:10px;background:#fff;color:#203a7c;padding:10px 14px;font-weight:750;font-size:13px}
+.btn.primary{background:#1743a5;color:#fff;border-color:#1743a5}
+.inp{font-weight:600;width:170px}
+input[type=file]{display:none}
+.status{font-size:12px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px 17px}
+.stat small{display:block;color:var(--muted);font-weight:750;font-size:12px}
+.stat strong{display:block;font-size:25px;color:var(--navy);margin-top:8px}
+.stat span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px;margin:0 0 15px}
+.panel h2{margin:0 0 4px;font-size:18px}
+.panel .sub{margin:0 0 14px;font-size:12px;color:var(--muted)}
+.barline{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px}
+.barname{width:150px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bartrack{height:14px;flex:1;background:#e7eefb;border-radius:10px;overflow:hidden}
+.barfill{height:100%;background:#2854c2;border-radius:10px}
+.barvalue{width:60px;text-align:right;color:#596b87}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{background:#eaf0ff;border:1px solid #d4e1ff;color:#2346a0;padding:6px 10px;border-radius:9px;font-size:12px}
+.filters{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:12px}
+.table-wrap{overflow:auto}
+table{border-collapse:collapse;width:100%;min-width:1180px;text-align:left;font-size:13px}
+th,td{border-bottom:1px solid #e7ecf5;padding:11px 8px;vertical-align:top}
+th{font-size:12px;color:#5f7192;background:#f7f9fd;cursor:pointer;white-space:nowrap}
+th.group{cursor:default;text-align:center;color:#2347a1;background:#eef3fd;border-bottom:2px solid #d6e2fa}
+th.sorted:after{content:' ▾'}th.sorted.asc:after{content:' ▴'}
+tbody tr.row{cursor:pointer}tbody tr.row:hover{background:#f7faff}
+.cat{display:inline-block;padding:3px 8px;border-radius:7px;background:#edf3ff;color:#2347a1;font-weight:750;font-size:12px;white-space:nowrap}
+.cat.urgent{background:#fdecef;color:#a3213c}
+.text{max-width:230px;white-space:pre-wrap;word-break:break-all}
+.muted{color:var(--muted)}
+.good{color:var(--good);font-weight:800}.bad{color:var(--bad);font-weight:800}
+tr.detail td{background:#fafcff;padding:14px 18px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.tag{display:inline-flex;padding:4px 9px;border-radius:8px;background:#edf3ff;color:#2347a1;font-size:12px;font-weight:700}
+.event{display:grid;grid-template-columns:80px 120px 1fr;gap:9px;padding:6px 0;border-bottom:1px solid #edf1f7;font-size:12px}
+.event time{color:#6a7893}
+.empty{text-align:center;color:#71819a;padding:24px}
+.notice{background:#fff9eb;color:#7c5d15;padding:13px;border-radius:12px;line-height:1.6;font-size:12px}
+@media(max-width:860px){.stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+<script src="assets/config.js"></script>
+</head>
+<body>
+<header class="head"><small>HCI 6조 · 지하철 QR 민원신고 프로토타입</small><h1>평가 대시보드</h1><p>사용성 지표(시간·클릭·체류시간)와 접수 내용(민원·입력한 글)을 한 화면에서 확인하는 연구자 전용 화면</p></header>
+<div class="wrap">
+  <div class="toolbar">
+    <input id="token" class="inp" placeholder="수집 서버 비밀번호" autocomplete="off">
+    <button class="btn primary" id="pull">☁ 수집 서버에서 불러오기</button>
+    <button class="btn" id="local">이 브라우저 기록 보기</button>
+    <label class="btn" for="importFile">JSON 기록 가져오기</label><input type="file" id="importFile" accept=".json,application/json" multiple>
+    <button class="btn" id="csv">CSV 내보내기</button>
+    <label class="status"><input type="checkbox" id="incl"> 미완료 세션 포함</label>
+    <span class="status" id="status">기록을 불러와 주세요.</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>전체 세션 / 완료율</small><strong id="sRate">—</strong><span id="sSess"></span></div>
+    <div class="stat"><small>평균 소요시간 (완료자)</small><strong id="sDur">—</strong><span>평가 시작 → 접수 완료</span></div>
+    <div class="stat"><small>평균 클릭 수 (완료자)</small><strong id="sClick">—</strong><span id="sScreens"></span></div>
+    <div class="stat"><small>참가자</small><strong id="sPeople">—</strong><span id="sRange"></span></div>
+    <div class="stat"><small>가장 많은 민원</small><strong id="sTop">—</strong><span id="sTopN"></span></div>
+    <div class="stat"><small>글을 입력한 접수</small><strong id="sText">—</strong><span id="sTextAvg"></span></div>
+    <div class="stat"><small>평균 글 입력 시간</small><strong id="sTyping">—</strong><span>입력칸 첫 글자 → 마지막 입력</span></div>
+    <div class="stat"><small>사진 첨부 / 문자 안내 희망</small><strong id="sExtra">—</strong><span>완료된 접수 기준</span></div>
+  </div>
+
+  <div class="grid2">
+    <section class="panel"><h2>화면별 평균 체류시간</h2><p class="sub">완료된 세션 기준 · 오래 머문 화면이 어려움을 겪은 구간일 수 있어요</p><div id="byScreen" class="empty">기록이 없습니다.</div></section>
+    <section class="panel"><h2>민원 종류별 접수</h2><p class="sub">완료된 접수 기준</p><div id="byCat" class="empty">기록이 없습니다.</div></section>
+    <section class="panel"><h2>선택지별 접수 (상위 8개)</h2><p class="sub">완료된 접수 기준</p><div id="byChoice" class="empty">기록이 없습니다.</div></section>
+    <section class="panel"><h2>자주 누른 버튼</h2><p class="sub">표시 중인 모든 세션의 클릭 기록</p><div id="topClicks" class="pills"><span class="muted">기록이 없습니다.</span></div></section>
+  </div>
+
+  <section class="panel">
+    <h2>참가자별 기록</h2>
+    <p class="sub">행을 누르면 화면별 체류시간과 시간순 행동 기록이 펼쳐집니다. 열 제목을 누르면 정렬됩니다.</p>
+    <div class="filters">
+      <select id="fCat"><option value="">모든 민원</option></select>
+      <select id="fCar"><option value="">모든 칸</option></select>
+      <input id="fText" class="inp" style="width:230px" placeholder="참가자·선택지·입력한 글 검색">
+    </div>
+    <div class="table-wrap"><table>
+      <thead>
+        <tr><th class="group" colspan="3">세션</th><th class="group" colspan="4">사용성 지표</th><th class="group" colspan="7">접수 내용</th></tr>
+        <tr>
+          <th data-k="at" class="sorted">접수 시각</th><th data-k="participant">참가자</th><th data-k="car">칸</th>
+          <th data-k="result">결과</th><th data-k="dur">소요시간</th><th data-k="clicks">클릭</th><th data-k="screens">방문 화면</th>
+          <th data-k="cat">민원 종류</th><th data-k="sel">선택지</th><th data-k="role">역할</th><th data-k="detail">입력한 글</th><th data-k="typing">글 입력 시간</th><th data-k="photos">사진</th><th data-k="feedback">문자 안내</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="14" class="empty">기록을 불러와 주세요.</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <div class="notice">※ 과업 완료는 '접수 완료' 화면 도달 기준입니다. 소요시간은 참가자가 '동의하고 시작하기'를 누른 시점부터 측정합니다. 접수 내용 기록 기능이 추가되기 전에 쌓인 기록은 민원 종류와 글 입력 시간이 '—'로 표시되고, 선택지는 클릭 기록에서 찾아 보여줍니다.</div>
+</div>
 <script>
-(()=>{'use strict';const KEY='ttota_hci_study_v3';const $=s=>document.querySelector(s);const pages={report:'메인',temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황',done:'접수 완료',phone:'전화 안내',help:'이용 안내',car:'객실 정보',block:'차단 화면'};const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let rows=[];const date=t=>new Date(t).toLocaleString('ko-KR');const secs=n=>(n/1000).toFixed(1)+'초';const get=()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}};const set=v=>{localStorage.setItem(KEY,JSON.stringify(v))};const eventClicks=x=>x.events.filter(e=>e.type==='click');const elapsed=x=>x.durationMs||((x.endedAt||Date.now())-x.startedAt);const dload=(name,txt,mime='text/plain;charset=utf-8')=>{const u=URL.createObjectURL(new Blob([txt],{type:mime}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-const subText=x=>{const s=x.submission;if(!s)return '';return `${pages[s.category]||s.category} · ${s.selection}${s.role?' ('+s.role+')':''}`};const csvField=s=>'"'+String(s??'').replace(/"/g,'""')+'"';function refresh(){rows=get().sort((a,b)=>b.startedAt-a.startedAt);const done=rows.filter(x=>x.success);$('#total').textContent=rows.length;$('#rate').textContent=rows.length?Math.round(done.length/rows.length*100)+'%':'—';$('#avg').textContent=done.length?secs(done.reduce((a,x)=>a+elapsed(x),0)/done.length):'—';$('#clickavg').textContent=rows.length?(rows.reduce((a,x)=>a+eventClicks(x).length,0)/rows.length).toFixed(1)+'회':'—';$('#bodyRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.participant)}</strong></td><td>${esc(x.car||'')}</td><td>${date(x.startedAt)}</td><td class="${x.success?'good':'bad'}">${x.success?'완료':x.endedAt?'미완료':'진행/중단'}</td><td>${esc(subText(x))}</td><td>${secs(elapsed(x))}</td><td>${eventClicks(x).length}회</td><td>${new Set(x.events.filter(e=>e.type==='page_view').map(e=>e.label)).size}개</td><td><button class="link" data-id="${esc(x.id)}">상세 보기</button></td></tr>`).join(''):'<tr><td colspan="9" class="empty">아직 테스트 기록이 없습니다.</td></tr>';
-const totals={};let count=0;for(const x of rows){if(!x.endedAt)continue;count++;for(const [p,t] of Object.entries(x.screenMs||{}))totals[p]=(totals[p]||0)+t}const sorted=Object.entries(totals).sort((a,b)=>b[1]-a[1]);const max=Math.max(1,...sorted.map(x=>x[1]));$('#screenBars').innerHTML=sorted.length?sorted.map(([p,t])=>`<div class="barline"><span class="barname">${esc(pages[p]||p)}</span><div class="bartrack"><div class="barfill" style="width:${Math.max(2,Math.round(t/max*100))}%"></div></div><span class="barvalue">${secs(t/count)}</span></div>`).join(''):'<div class="empty">완료된 테스트의 체류시간이 없습니다.</div>';
-const clicks={};for(const x of rows)for(const e of eventClicks(x))clicks[e.label]=(clicks[e.label]||0)+1;$('#topClicks').innerHTML=Object.entries(clicks).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>`<span class="clickpill">${esc(k)} · <strong>${v}회</strong></span>`).join('')||'<p class="empty">클릭 기록이 없습니다.</p>'}
-function show(id){const x=rows.find(r=>r.id===id);if(!x)return;$('#details').classList.add('show');$('#detailTitle').textContent=x.participant+' · 행동 흐름';$('#detailSummary').innerHTML=`<span class="tag">${x.success?'과업 완료':'미완료 / 중단'}</span> <span class="tag">소요 ${secs(elapsed(x))}</span> <span class="tag">클릭 ${eventClicks(x).length}회</span>${x.submission?` <span class="tag">접수: ${esc(subText(x))}</span> <span class="tag">사진 ${x.submission.photos}장</span> <span class="tag">문자 안내 ${x.submission.feedback?'희망':'안 함'}</span> <span class="tag">추가 입력 ${x.submission.detailLength}자</span>${x.submission.detail?`<div class="notice" style="margin-top:12px"><b>입력한 글</b><br>${esc(x.submission.detail)}</div>`:''}`:''}<div style="margin-top:15px">${Object.entries(x.screenMs||{}).map(([k,v])=>`<span class="tag" style="margin:3px">${esc(pages[k]||k)} ${secs(v)}</span>`).join('')}</div>`;$('#detailEvents').innerHTML=x.events.map(e=>`<div class="event"><time>+${secs(e.elapsedMs)}</time><strong>${esc(e.type)}</strong><span>${esc(pages[e.label]||e.label)}${e.screen?' (화면: '+esc(pages[e.screen]||e.screen)+')':''}</span></div>`).join('');$('#details').scrollIntoView({behavior:'smooth',block:'start'})}
-$('#bodyRows').addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(b)show(b.dataset.id)});$('#closeDetail').onclick=()=>$('#details').classList.remove('show');$('#refresh').onclick=refresh;$('#exportJson').onclick=()=>dload('ttota_hci_all.json',JSON.stringify({format:'ttota-hci-v3',sessions:rows},null,2),'application/json');$('#exportCsv').onclick=()=>{const header=['참가자','칸','세션ID','시작시각','완료여부','접수내용','사진수','문자안내','추가입력글자수','추가입력내용','소요시간초','클릭횟수','화면별체류시간JSON','이벤트JSON'];const out=[header.map(csvField).join(','),...rows.map(x=>[x.participant,x.car||'',x.id,date(x.startedAt),x.success?'완료':'미완료',subText(x),x.submission?x.submission.photos:'',x.submission?(x.submission.feedback?'희망':'안함'):'',x.submission?x.submission.detailLength:'',x.submission?(x.submission.detail||''):'',(elapsed(x)/1000).toFixed(2),eventClicks(x).length,JSON.stringify(x.screenMs||{}),JSON.stringify(x.events)].map(csvField).join(','))].join('\r\n');dload('ttota_hci_results.csv','\ufeff'+out,'text/csv;charset=utf-8')};const merge=a=>{let all=get(),num=0;for(const x of a){if(!x||!x.id||!x.participant||!Array.isArray(x.events)||!x.startedAt)continue;const ix=all.findIndex(y=>y.id===x.id);if(ix<0){all.push(x);num++}else if((x.events?.length||0)>(all[ix].events?.length||0)){all[ix]=x;num++}}set(all);return num};try{$('#token').value=localStorage.getItem('hci6_token')||''}catch(e){}$('#pull').onclick=async()=>{if(typeof COLLECT_URL==='undefined'||!COLLECT_URL){alert('assets/config.js에 수집 서버 주소(COLLECT_URL)가 아직 없습니다.');return}const t=$('#token').value.trim();try{localStorage.setItem('hci6_token',t)}catch(e){}try{const r=await fetch(COLLECT_URL+'?token='+encodeURIComponent(t));const obj=await r.json();if(obj.error){alert('비밀번호가 맞지 않습니다.');return}const n=merge(obj.sessions||[]);refresh();alert(n+'개 기록을 수집 서버에서 가져왔습니다.')}catch(err){alert('수집 서버에 연결하지 못했습니다: '+err.message)}};$('#importFile').onchange=async e=>{let all=get(),num=0;for(const f of e.target.files){try{const obj=JSON.parse(await f.text());const a=Array.isArray(obj)?obj:obj.sessions;if(!Array.isArray(a))throw Error('sessions 데이터 없음');for(const x of a){if(!x.id||!x.participant||!Array.isArray(x.events)||!x.startedAt)continue;const ix=all.findIndex(y=>y.id===x.id);if(ix<0){all.push(x);num++}else if((x.events?.length||0)>(all[ix].events?.length||0)){all[ix]=x;num++}}}catch(err){alert(f.name+' 파일을 읽지 못했습니다: '+err.message)}}set(all);refresh();alert(num+'개 기록을 추가/갱신했습니다.');e.target.value=''};$('#erase').onclick=()=>{if(confirm('저장된 사용성 평가 기록을 모두 삭제할까요? 복구할 수 없습니다.')){localStorage.removeItem(KEY);refresh();$('#details').classList.remove('show')}};window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});refresh();})();
-</script></body></html>
+(()=>{'use strict';
+const $=s=>document.querySelector(s);
+const KEY='ttota_hci_study_v3';
+const CAT={temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황'};
+const PAGE={report:'메인',temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황',done:'접수 완료',phone:'전화 안내',help:'이용 안내',block:'차단 화면'};
+const ACT={submit:'접수하기',back:'돌아가기',restart:'다른 민원 신고',phone:'전화 신고 안내',help:'이용 안내'};
+const NAV=/^(temperature|environment|announcement|order|urgent|submit|back|restart|home|report|car|help|phone)$/;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const secs=ms=>ms==null?'—':(ms/1000).toFixed(1)+'초';
+const dt=t=>t?new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+let sessions=[], sortKey='at', asc=false, open=null;
+try{$('#token').value=localStorage.getItem('hci6_token')||''}catch(e){}
+
+function toRow(x){
+  const s=x.submission||{}, ev=x.events||[];
+  const choices=ev.filter(e=>e.type==='click'&&e.label&&!NAV.test(e.label)).map(e=>e.label);
+  return {
+    id:x.id, participant:x.participant, car:x.car||'',
+    at:s.submittedAt||x.endedAt||x.startedAt,
+    success:!!x.success, result:x.success?'완료':(x.endedAt?'미완료':'중단'),
+    dur:x.durationMs||((x.endedAt||Date.now())-x.startedAt),
+    clicks:ev.filter(e=>e.type==='click').length,
+    screens:new Set(ev.filter(e=>e.type==='page_view').map(e=>e.label)).size,
+    cat:s.category||'', sel:s.selection||choices.at(-1)||'', role:s.role||'',
+    detail:s.detail||'', typing:s.typingMs||null,
+    photos:s.photos??'', feedback:s.feedback==null?'':(s.feedback?'희망':'안 함'),
+    hasSub:!!x.submission, screenMs:x.screenMs||{}, events:ev
+  };
+}
+const shown=()=>sessions.map(toRow).filter(x=>$('#incl').checked||x.success);
+function rows(){
+  const fc=$('#fCat').value, fcar=$('#fCar').value, ft=$('#fText').value.trim().toLowerCase();
+  let r=shown();
+  if(fc)r=r.filter(x=>x.cat===fc);
+  if(fcar)r=r.filter(x=>x.car===fcar);
+  if(ft)r=r.filter(x=>[x.participant,x.sel,x.detail,CAT[x.cat]||'',x.role].join(' ').toLowerCase().includes(ft));
+  r.sort((a,b)=>{const va=a[sortKey],vb=b[sortKey];const c=(typeof va==='number'&&typeof vb==='number')?va-vb:String(va??'').localeCompare(String(vb??''),'ko');return asc?c:-c});
+  return r;
+}
+function bars(el,entries,fmt){
+  if(!entries.length){el.className='empty';el.innerHTML='기록이 없습니다.';return}
+  el.className='';const max=Math.max(...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([k,v])=>`<div class="barline"><span class="barname" title="${esc(k)}">${esc(k)}</span><div class="bartrack"><div class="barfill" style="width:${Math.max(3,Math.round(v/max*100))}%"></div></div><span class="barvalue">${fmt(v)}</span></div>`).join('');
+}
+function render(){
+  const all=sessions.map(toRow), done=all.filter(x=>x.success);
+  // 필터 옵션
+  const keepC=$('#fCat').value, keepCar=$('#fCar').value;
+  const cats=[...new Set(all.map(x=>x.cat).filter(Boolean))], cars=[...new Set(all.map(x=>x.car).filter(Boolean))];
+  $('#fCat').innerHTML='<option value="">모든 민원</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(CAT[c]||c)}</option>`).join('');$('#fCat').value=keepC;
+  $('#fCar').innerHTML='<option value="">모든 칸</option>'+cars.map(c=>`<option value="${esc(c)}">${esc(c)}호차</option>`).join('');$('#fCar').value=keepCar;
+  // 요약 카드
+  $('#sRate').textContent=all.length?`${all.length}건 · ${Math.round(done.length/all.length*100)}%`:'—';
+  $('#sSess').textContent=all.length?`완료 ${done.length}건 / 미완료·중단 ${all.length-done.length}건`:'';
+  $('#sDur').textContent=done.length?secs(avg(done.map(x=>x.dur))):'—';
+  $('#sClick').textContent=done.length?avg(done.map(x=>x.clicks)).toFixed(1)+'회':'—';
+  $('#sScreens').textContent=done.length?`방문 화면 평균 ${avg(done.map(x=>x.screens)).toFixed(1)}개`:'';
+  $('#sPeople').textContent=all.length?new Set(all.map(x=>x.participant)).size+'명':'—';
+  if(all.length){const ts=all.map(x=>x.at).sort((a,b)=>a-b);$('#sRange').textContent=`${dt(ts[0])} ~ ${dt(ts.at(-1))}`}else $('#sRange').textContent='';
+  const byCat={};done.forEach(x=>{const k=CAT[x.cat]||'(내용 기록 전)';byCat[k]=(byCat[k]||0)+1});
+  const catE=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  $('#sTop').textContent=catE[0]?catE[0][0]:'—';$('#sTopN').textContent=catE[0]?`${catE[0][1]}건 (${Math.round(catE[0][1]/done.length*100)}%)`:'';
+  const withText=done.filter(x=>x.detail);
+  $('#sText').textContent=done.length?`${withText.length}건`:'—';
+  $('#sTextAvg').textContent=withText.length?`평균 ${Math.round(avg(withText.map(x=>x.detail.length)))}자`:'';
+  const typ=done.filter(x=>x.typing).map(x=>x.typing);
+  $('#sTyping').textContent=typ.length?secs(avg(typ)):'—';
+  const subs=done.filter(x=>x.hasSub);
+  $('#sExtra').textContent=subs.length?`${subs.filter(x=>x.photos>0).length}건 / ${subs.filter(x=>x.feedback==='희망').length}건`:'—';
+  // 그래프
+  const tot={};done.forEach(x=>{for(const [p,t] of Object.entries(x.screenMs))tot[p]=(tot[p]||0)+t});
+  bars($('#byScreen'),Object.entries(tot).map(([p,t])=>[PAGE[p]||p,t/done.length]).sort((a,b)=>b[1]-a[1]),secs);
+  bars($('#byCat'),catE,v=>v+'건');
+  const byChoice={};done.forEach(x=>{if(!x.sel)return;const k=`${CAT[x.cat]||'기타'} · ${x.sel}`;byChoice[k]=(byChoice[k]||0)+1});
+  bars($('#byChoice'),Object.entries(byChoice).sort((a,b)=>b[1]-a[1]).slice(0,8),v=>v+'건');
+  const clicks={};shown().forEach(x=>x.events.filter(e=>e.type==='click').forEach(e=>{const k=CAT[e.label]||ACT[e.label]||e.label;clicks[k]=(clicks[k]||0)+1}));
+  const ce=Object.entries(clicks).sort((a,b)=>b[1]-a[1]).slice(0,16);
+  $('#topClicks').innerHTML=ce.length?ce.map(([k,v])=>`<span class="pill">${esc(k)} · <b>${v}회</b></span>`).join(''):'<span class="muted">기록이 없습니다.</span>';
+  // 표
+  document.querySelectorAll('th[data-k]').forEach(th=>{th.classList.toggle('sorted',th.dataset.k===sortKey);th.classList.toggle('asc',th.dataset.k===sortKey&&asc)});
+  const r=rows(), dash='<span class="muted">—</span>';
+  $('#rows').innerHTML=r.length?r.map(x=>{
+    const main=`<tr class="row" data-id="${esc(x.id)}"><td>${esc(dt(x.at))}</td><td><b>${esc(x.participant)}</b></td><td>${esc(x.car)}</td><td class="${x.success?'good':'bad'}">${x.result}</td><td>${secs(x.dur)}</td><td>${x.clicks}회</td><td>${x.screens}개</td><td>${x.cat?`<span class="cat ${x.cat==='urgent'?'urgent':''}">${esc(CAT[x.cat]||x.cat)}</span>`:dash}</td><td>${esc(x.sel)||dash}</td><td>${esc(x.role)||dash}</td><td class="text">${x.detail?esc(x.detail):dash}</td><td>${x.typing?secs(x.typing):dash}</td><td>${x.photos===''?dash:x.photos+'장'}</td><td>${esc(x.feedback)||dash}</td></tr>`;
+    const det=open===x.id?`<tr class="detail"><td colspan="14"><b>${esc(x.participant)} · 화면별 체류시간</b><div class="tags">${Object.entries(x.screenMs).map(([k,v])=>`<span class="tag">${esc(PAGE[k]||k)} ${secs(v)}</span>`).join('')||dash}</div><b>시간순 행동 기록</b>${x.events.map(e=>`<div class="event"><time>+${secs(e.elapsedMs)}</time><strong>${esc(e.type)}</strong><span>${esc(PAGE[e.label]||ACT[e.label]||e.label)}${e.screen?' <span class="muted">(화면: '+esc(PAGE[e.screen]||e.screen)+')</span>':''}</span></div>`).join('')}</td></tr>`:'';
+    return main+det}).join(''):'<tr><td colspan="14" class="empty">조건에 맞는 기록이 없습니다.</td></tr>';
+}
+function load(list,src,append){
+  const incoming=(list||[]).filter(x=>x&&x.id&&x.participant&&Array.isArray(x.events)&&x.startedAt);
+  if(append){for(const x of incoming){const i=sessions.findIndex(y=>y.id===x.id);if(i<0)sessions.push(x);else if(x.events.length>sessions[i].events.length)sessions[i]=x}}
+  else sessions=incoming;
+  $('#status').textContent=`${src}에서 세션 ${incoming.length}개를 불러왔어요 · 현재 ${sessions.length}개 표시 대상 (${new Date().toLocaleTimeString('ko-KR')})`;
+  render();
+}
+$('#pull').onclick=async()=>{
+  if(typeof COLLECT_URL==='undefined'||!COLLECT_URL){alert('assets/config.js에 수집 서버 주소가 없습니다.');return}
+  const t=$('#token').value.trim();try{localStorage.setItem('hci6_token',t)}catch(e){}
+  $('#status').textContent='불러오는 중…';
+  try{const r=await fetch(COLLECT_URL+'?token='+encodeURIComponent(t));const o=await r.json();if(o.error){$('#status').textContent='비밀번호가 맞지 않습니다.';return}load(o.sessions,'수집 서버',false)}
+  catch(err){$('#status').textContent='수집 서버에 연결하지 못했습니다: '+err.message}
+};
+$('#local').onclick=()=>{let v=[];try{v=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}load(Array.isArray(v)?v:[],'이 브라우저',false)};
+$('#importFile').onchange=async e=>{for(const f of e.target.files){try{const o=JSON.parse(await f.text());load(Array.isArray(o)?o:o.sessions,f.name,true)}catch(err){alert(f.name+' 파일을 읽지 못했습니다: '+err.message)}}e.target.value=''};
+['#fCat','#fCar','#incl'].forEach(s=>$(s).addEventListener('change',render));
+$('#fText').addEventListener('input',render);
+document.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{if(sortKey===th.dataset.k)asc=!asc;else{sortKey=th.dataset.k;asc=false}render()}));
+$('#rows').addEventListener('click',e=>{const tr=e.target.closest('tr.row');if(!tr)return;open=open===tr.dataset.id?null:tr.dataset.id;render()});
+$('#csv').onclick=()=>{
+  const f=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const head=['접수시각','참가자','칸','결과','소요시간(초)','클릭수','방문화면수','민원종류','선택지','역할','입력한글','글입력시간(초)','사진수','문자안내','화면별체류시간(초)','세션ID'];
+  const body=rows().map(x=>[new Date(x.at).toLocaleString('ko-KR'),x.participant,x.car,x.result,(x.dur/1000).toFixed(1),x.clicks,x.screens,CAT[x.cat]||x.cat,x.sel,x.role,x.detail,x.typing?(x.typing/1000).toFixed(1):'',x.photos,x.feedback,Object.entries(x.screenMs).map(([k,v])=>`${PAGE[k]||k} ${(v/1000).toFixed(1)}`).join(' / '),x.id].map(f).join(','));
+  const u=URL.createObjectURL(new Blob(['﻿'+[head.map(f).join(','),...body].join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');a.href=u;a.download='hci6_평가기록.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+};
+})();
+</script>
+</body>
+</html>
