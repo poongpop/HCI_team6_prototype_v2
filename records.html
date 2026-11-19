@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HCI 6조 · 접수 기록 보기</title>
+<style>
+:root{--navy:#142f7c;--blue:#2454c8;--ink:#152646;--muted:#64748b;--line:#dce4f2;--pale:#edf3ff;--good:#15835a;--bad:#ae3d48}
+*{box-sizing:border-box}
+body{background:#f3f6fc;color:var(--ink);margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.head{background:linear-gradient(105deg,#132d78,#3154be);color:#fff;padding:28px max(20px,calc((100vw - 1180px)/2))}
+.head small{opacity:.8;font-weight:750}.head h1{margin:8px 0 4px;font-size:27px}.head p{margin:0;font-size:13px;opacity:.85}
+.head a{color:#fff}
+.wrap{max-width:1180px;margin:22px auto 60px;padding:0 18px}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:16px}
+.btn,.inp,select{border:1px solid #cdd9f0;border-radius:10px;background:#fff;color:#203a7c;padding:10px 14px;font-weight:750;font-size:13px}
+.btn.primary{background:#1743a5;color:#fff;border-color:#1743a5}
+.inp{font-weight:600;width:170px}
+.status{font-size:12px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px}
+.stat small{display:block;color:var(--muted);font-weight:750;font-size:12px}
+.stat strong{display:block;font-size:25px;color:var(--navy);margin-top:9px}
+.stat span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px;margin:15px 0}
+.panel h2{margin:0 0 14px;font-size:18px}
+.barline{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px}
+.barname{width:150px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bartrack{height:14px;flex:1;background:#e7eefb;border-radius:10px;overflow:hidden}
+.barfill{height:100%;background:#2854c2;border-radius:10px}
+.barvalue{width:56px;text-align:right;color:#596b87}
+.filters{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:12px}
+.table-wrap{overflow:auto}
+table{border-collapse:collapse;width:100%;min-width:980px;text-align:left;font-size:13px}
+th,td{border-bottom:1px solid #e7ecf5;padding:11px 9px;vertical-align:top}
+th{font-size:12px;color:#5f7192;background:#f7f9fd;position:sticky;top:0;cursor:pointer;white-space:nowrap}
+th.sorted:after{content:' ▾'}th.sorted.asc:after{content:' ▴'}
+tbody tr.row{cursor:pointer}tbody tr.row:hover{background:#f7faff}
+.cat{display:inline-block;padding:3px 8px;border-radius:7px;background:#edf3ff;color:#2347a1;font-weight:750;font-size:12px;white-space:nowrap}
+.cat.urgent{background:#fdecef;color:#a3213c}
+.text{max-width:260px;white-space:pre-wrap;word-break:break-all}
+.muted{color:var(--muted)}
+.good{color:var(--good);font-weight:800}.bad{color:var(--bad);font-weight:800}
+tr.detail td{background:#fafcff;padding:14px 18px}
+.event{display:grid;grid-template-columns:80px 120px 1fr;gap:9px;padding:6px 0;border-bottom:1px solid #edf1f7;font-size:12px}
+.event time{color:#6a7893}
+.empty{text-align:center;color:#71819a;padding:30px}
+.notice{background:#fff9eb;color:#7c5d15;padding:13px;border-radius:12px;line-height:1.6;font-size:12px}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+<script src="assets/config.js"></script>
+</head>
+<body>
+<header class="head"><small>HCI 6조 · 지하철 QR 민원신고 프로토타입</small><h1>접수 기록 보기</h1><p>참가자가 언제, 어느 칸에서, 어떤 민원을 접수했고 무엇을 입력했는지 정리한 화면 · <a href="dashboard.html">사용성 평가 대시보드로 이동</a></p></header>
+<div class="wrap">
+  <div class="toolbar">
+    <input id="token" class="inp" placeholder="수집 서버 비밀번호" autocomplete="off">
+    <button class="btn primary" id="pull">☁ 수집 서버에서 불러오기</button>
+    <button class="btn" id="local">이 브라우저 기록 보기</button>
+    <button class="btn" id="csv">CSV 내보내기</button>
+    <label class="status"><input type="checkbox" id="incl"> 미완료 세션 포함</label>
+    <span class="status" id="status">기록을 불러와 주세요.</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>접수 건수</small><strong id="sCount">—</strong><span id="sPeople"></span></div>
+    <div class="stat"><small>가장 많은 민원</small><strong id="sTop">—</strong><span id="sTopN"></span></div>
+    <div class="stat"><small>평균 접수 소요시간</small><strong id="sDur">—</strong><span>평가 시작 → 접수 완료</span></div>
+    <div class="stat"><small>글을 입력한 접수</small><strong id="sText">—</strong><span id="sTextAvg"></span></div>
+    <div class="stat"><small>기록 기간</small><strong id="sRange" style="font-size:15px;line-height:1.5">—</strong></div>
+  </div>
+
+  <div class="grid2">
+    <section class="panel"><h2>민원 종류별 접수</h2><div id="byCat" class="empty">기록이 없습니다.</div></section>
+    <section class="panel"><h2>선택지별 접수 (상위 8개)</h2><div id="byChoice" class="empty">기록이 없습니다.</div></section>
+  </div>
+
+  <section class="panel">
+    <h2>접수 내역</h2>
+    <div class="filters">
+      <select id="fCat"><option value="">모든 민원</option></select>
+      <select id="fCar"><option value="">모든 칸</option></select>
+      <input id="fText" class="inp" style="width:220px" placeholder="참가자·선택지·입력한 글 검색">
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th data-k="at" class="sorted">접수 시각</th><th data-k="participant">참가자</th><th data-k="car">칸</th>
+        <th data-k="cat">민원 종류</th><th data-k="sel">선택지</th><th data-k="role">역할</th>
+        <th data-k="detail">입력한 글</th><th data-k="typing">글 입력 시간</th><th data-k="photos">사진</th><th data-k="feedback">문자 안내</th>
+        <th data-k="dur">소요시간</th><th data-k="clicks">클릭</th><th data-k="result">결과</th>
+      </tr></thead>
+      <tbody id="rows"><tr><td colspan="13" class="empty">기록을 불러와 주세요.</td></tr></tbody>
+    </table></div>
+    <p class="status" style="margin-top:10px">행을 누르면 그 참가자의 시간순 행동 기록이 펼쳐집니다. 열 제목을 누르면 정렬됩니다.</p>
+  </section>
+
+  <div class="notice">※ 시연용 프로토타입의 평가 기록입니다. 글 입력 시간은 입력칸에 처음 글자를 쓴 시점부터 마지막으로 입력한 시점까지입니다. 이 기능이 추가되기 전에 쌓인 기록은 글 입력 시간이 '—'로 표시됩니다.</div>
+</div>
+<script>
+(()=>{'use strict';
+const $=s=>document.querySelector(s);
+const KEY='ttota_hci_study_v3';
+const CAT={temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황'};
+const PAGE={report:'메인',temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황',done:'접수 완료',phone:'전화 안내',help:'이용 안내',car:'객실 정보',block:'차단 화면'};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const secs=ms=>ms==null?'—':(ms/1000).toFixed(1)+'초';
+const dt=t=>t?new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
+let sessions=[], sortKey='at', asc=false, open=null;
+try{$('#token').value=localStorage.getItem('hci6_token')||''}catch(e){}
+
+function toRow(x){
+  const s=x.submission||{};
+  const lastClick=[...(x.events||[])].reverse().find(e=>e.type==='click');
+  const clickedChoice=(x.events||[]).filter(e=>e.type==='click'&&e.label&&!/^(temperature|environment|announcement|order|urgent|submit|back|restart|home|report|car|help|phone)$/.test(e.label)).map(e=>e.label);
+  return {
+    id:x.id, participant:x.participant, car:x.car||'',
+    at:s.submittedAt||x.endedAt||x.startedAt,
+    cat:s.category||'', sel:s.selection||'', role:s.role||'',
+    detail:s.detail||'', detailLength:s.detailLength??(s.detail||'').length,
+    typing:s.typingMs??null, photos:s.photos??'', feedback:s.feedback==null?'':(s.feedback?'희망':'안 함'),
+    dur:x.durationMs||((x.endedAt||Date.now())-x.startedAt), clicks:(x.events||[]).filter(e=>e.type==='click').length,
+    result:x.success?'완료':(x.endedAt?'미완료':'중단'), success:!!x.success, hasSub:!!x.submission,
+    events:x.events||[], fallbackChoice:clickedChoice.at(-1)||''
+  };
+}
+function rows(){
+  const fc=$('#fCat').value, fcar=$('#fCar').value, ft=$('#fText').value.trim().toLowerCase();
+  let r=sessions.map(toRow).filter(x=>$('#incl').checked||x.success);
+  if(fc)r=r.filter(x=>x.cat===fc);
+  if(fcar)r=r.filter(x=>x.car===fcar);
+  if(ft)r=r.filter(x=>[x.participant,x.sel,x.detail,CAT[x.cat]||'',x.role].join(' ').toLowerCase().includes(ft));
+  r.sort((a,b)=>{const va=a[sortKey],vb=b[sortKey];const c=(typeof va==='number'&&typeof vb==='number')?va-vb:String(va??'').localeCompare(String(vb??''),'ko');return asc?c:-c});
+  return r;
+}
+function bars(el,entries){
+  if(!entries.length){el.className='empty';el.innerHTML='기록이 없습니다.';return}
+  el.className='';const max=Math.max(...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([k,v])=>`<div class="barline"><span class="barname" title="${esc(k)}">${esc(k)}</span><div class="bartrack"><div class="barfill" style="width:${Math.max(3,Math.round(v/max*100))}%"></div></div><span class="barvalue">${v}건</span></div>`).join('');
+}
+function render(){
+  const all=sessions.map(toRow).filter(x=>x.success);
+  // 필터 옵션
+  const cats=[...new Set(sessions.map(x=>x.submission?.category).filter(Boolean))];
+  const cars=[...new Set(sessions.map(x=>x.car).filter(Boolean))];
+  const keepC=$('#fCat').value, keepCar=$('#fCar').value;
+  $('#fCat').innerHTML='<option value="">모든 민원</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(CAT[c]||c)}</option>`).join('');$('#fCat').value=keepC;
+  $('#fCar').innerHTML='<option value="">모든 칸</option>'+cars.map(c=>`<option value="${esc(c)}">${esc(c)}호차</option>`).join('');$('#fCar').value=keepCar;
+  // 요약
+  $('#sCount').textContent=all.length+'건';
+  $('#sPeople').textContent=`참가자 ${new Set(all.map(x=>x.participant)).size}명`;
+  const byCat={};all.forEach(x=>{const k=CAT[x.cat]||(x.cat||'(내용 기록 전)');byCat[k]=(byCat[k]||0)+1});
+  const catE=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  $('#sTop').textContent=catE[0]?catE[0][0]:'—';$('#sTopN').textContent=catE[0]?`${catE[0][1]}건 (${Math.round(catE[0][1]/all.length*100)}%)`:'';
+  $('#sDur').textContent=all.length?secs(all.reduce((a,x)=>a+x.dur,0)/all.length):'—';
+  const withText=all.filter(x=>x.detail);
+  $('#sText').textContent=all.length?`${withText.length}건`:'—';
+  $('#sTextAvg').textContent=withText.length?`평균 ${Math.round(withText.reduce((a,x)=>a+x.detail.length,0)/withText.length)}자`:'';
+  if(all.length){const ts=all.map(x=>x.at).sort((a,b)=>a-b);$('#sRange').innerHTML=`${esc(dt(ts[0]))}<br>~ ${esc(dt(ts.at(-1)))}`}else $('#sRange').textContent='—';
+  bars($('#byCat'),catE);
+  const byChoice={};all.forEach(x=>{if(!x.sel)return;const k=`${CAT[x.cat]||x.cat} · ${x.sel}`;byChoice[k]=(byChoice[k]||0)+1});
+  bars($('#byChoice'),Object.entries(byChoice).sort((a,b)=>b[1]-a[1]).slice(0,8));
+  // 표
+  document.querySelectorAll('th[data-k]').forEach(th=>{th.classList.toggle('sorted',th.dataset.k===sortKey);th.classList.toggle('asc',th.dataset.k===sortKey&&asc)});
+  const r=rows();
+  $('#rows').innerHTML=r.length?r.map(x=>{
+    const main=`<tr class="row" data-id="${esc(x.id)}"><td>${esc(dt(x.at))}</td><td><b>${esc(x.participant)}</b></td><td>${esc(x.car)}</td><td>${x.cat?`<span class="cat ${x.cat==='urgent'?'urgent':''}">${esc(CAT[x.cat]||x.cat)}</span>`:'<span class="muted">—</span>'}</td><td>${esc(x.sel||x.fallbackChoice)}</td><td>${esc(x.role)||'<span class="muted">—</span>'}</td><td class="text">${x.detail?esc(x.detail):'<span class="muted">—</span>'}</td><td>${x.typing?secs(x.typing):'<span class="muted">—</span>'}</td><td>${x.photos===''?'—':x.photos+'장'}</td><td>${esc(x.feedback)||'—'}</td><td>${secs(x.dur)}</td><td>${x.clicks}회</td><td class="${x.success?'good':'bad'}">${x.result}</td></tr>`;
+    const det=open===x.id?`<tr class="detail"><td colspan="13"><b>${esc(x.participant)}의 시간순 행동 기록</b>${x.events.map(e=>`<div class="event"><time>+${secs(e.elapsedMs)}</time><strong>${esc(e.type)}</strong><span>${esc(PAGE[e.label]||CAT[e.label]||e.label)}${e.screen?' <span class="muted">(화면: '+esc(PAGE[e.screen]||e.screen)+')</span>':''}</span></div>`).join('')}</td></tr>`:'';
+    return main+det}).join(''):'<tr><td colspan="13" class="empty">조건에 맞는 기록이 없습니다.</td></tr>';
+}
+function load(list,src){sessions=(list||[]).filter(x=>x&&x.id&&Array.isArray(x.events));$('#status').textContent=`${src}에서 세션 ${sessions.length}개를 불러왔어요 (${new Date().toLocaleTimeString('ko-KR')})`;render()}
+$('#pull').onclick=async()=>{
+  if(typeof COLLECT_URL==='undefined'||!COLLECT_URL){alert('assets/config.js에 수집 서버 주소가 없습니다.');return}
+  const t=$('#token').value.trim();try{localStorage.setItem('hci6_token',t)}catch(e){}
+  $('#status').textContent='불러오는 중…';
+  try{const r=await fetch(COLLECT_URL+'?token='+encodeURIComponent(t));const o=await r.json();if(o.error){$('#status').textContent='비밀번호가 맞지 않습니다.';return}load(o.sessions,'수집 서버')}
+  catch(err){$('#status').textContent='수집 서버에 연결하지 못했습니다: '+err.message}
+};
+$('#local').onclick=()=>{let v=[];try{v=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}load(Array.isArray(v)?v:[],'이 브라우저')};
+['#fCat','#fCar','#incl'].forEach(s=>$(s).addEventListener('change',render));
+$('#fText').addEventListener('input',render);
+document.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{if(sortKey===th.dataset.k)asc=!asc;else{sortKey=th.dataset.k;asc=false}render()}));
+$('#rows').addEventListener('click',e=>{const tr=e.target.closest('tr.row');if(!tr)return;open=open===tr.dataset.id?null:tr.dataset.id;render()});
+$('#csv').onclick=()=>{
+  const f=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const head=['접수시각','참가자','칸','민원종류','선택지','역할','입력한글','글입력시간(초)','사진수','문자안내','소요시간(초)','클릭수','결과'];
+  const body=rows().map(x=>[new Date(x.at).toLocaleString('ko-KR'),x.participant,x.car,CAT[x.cat]||x.cat,x.sel||x.fallbackChoice,x.role,x.detail,x.typing?(x.typing/1000).toFixed(1):'',x.photos,x.feedback,(x.dur/1000).toFixed(1),x.clicks,x.result].map(f).join(','));
+  const u=URL.createObjectURL(new Blob(['﻿'+[head.map(f).join(','),...body].join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');a.href=u;a.download='hci6_접수기록.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+};
+})();
+</script>
+</body>
+</html>
