@@ -115,8 +115,10 @@ tr.detail td{background:#fafcff;padding:14px 18px}
 (()=>{'use strict';
 const $=s=>document.querySelector(s);
 const KEY='ttota_hci_study_v3';
-const CAT={temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황'};
-const PAGE={report:'메인',temperature:'온도조절',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황',done:'접수 완료',phone:'전화 안내',help:'이용 안내',block:'차단 화면'};
+const CAT={temperature:'온도조절',other:'기타 민원',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황'};
+const GRP={order:'질서저해',environment:'환경',env:'환경',announcement:'안내방송',facility:'시설물'};
+const catName=x=>x.cat==='other'&&x.group?`기타 · ${GRP[x.group]||x.group}`:x.cat==='environment'&&x.group&&x.group!=='env'?`환경민원 · ${GRP[x.group]||x.group}`:(CAT[x.cat]||x.cat);
+const PAGE={report:'메인',temperature:'온도조절',other:'기타 민원',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황',done:'접수 완료',phone:'전화 안내',help:'이용 안내',block:'차단 화면'};
 const ACT={submit:'접수하기',back:'돌아가기',restart:'다른 민원 신고',phone:'전화 신고 안내',help:'이용 안내'};
 const NAV=/^(temperature|environment|announcement|order|urgent|submit|back|restart|home|report|car|help|phone)$/;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -136,7 +138,7 @@ function toRow(x){
     dur:x.durationMs||((x.endedAt||Date.now())-x.startedAt),
     clicks:ev.filter(e=>e.type==='click').length,
     screens:new Set(ev.filter(e=>e.type==='page_view').map(e=>e.label)).size,
-    cat:s.category||'', sel:s.selection||choices.at(-1)||'', role:s.role||'',
+    cat:s.category||'', group:s.group||'', sel:s.selection||choices.at(-1)||'', role:s.role||'',
     detail:s.detail||'', typing:s.typingMs||null,
     photos:s.photos??'', feedback:s.feedback==null?'':(s.feedback?'희망':'안 함'),
     hasSub:!!x.submission, screenMs:x.screenMs||{}, events:ev
@@ -148,7 +150,7 @@ function rows(){
   let r=shown();
   if(fc)r=r.filter(x=>x.cat===fc);
   if(fcar)r=r.filter(x=>x.car===fcar);
-  if(ft)r=r.filter(x=>[x.participant,x.sel,x.detail,CAT[x.cat]||'',x.role].join(' ').toLowerCase().includes(ft));
+  if(ft)r=r.filter(x=>[x.participant,x.sel,x.detail,x.cat?catName(x):'',x.role].join(' ').toLowerCase().includes(ft));
   r.sort((a,b)=>{const va=a[sortKey],vb=b[sortKey];const c=(typeof va==='number'&&typeof vb==='number')?va-vb:String(va??'').localeCompare(String(vb??''),'ko');return asc?c:-c});
   return r;
 }
@@ -172,7 +174,7 @@ function render(){
   $('#sScreens').textContent=done.length?`방문 화면 평균 ${avg(done.map(x=>x.screens)).toFixed(1)}개`:'';
   $('#sPeople').textContent=all.length?new Set(all.map(x=>x.participant)).size+'명':'—';
   if(all.length){const ts=all.map(x=>x.at).sort((a,b)=>a-b);$('#sRange').textContent=`${dt(ts[0])} ~ ${dt(ts.at(-1))}`}else $('#sRange').textContent='';
-  const byCat={};done.forEach(x=>{const k=CAT[x.cat]||'(내용 기록 전)';byCat[k]=(byCat[k]||0)+1});
+  const byCat={};done.forEach(x=>{const k=x.cat?catName(x):'(내용 기록 전)';byCat[k]=(byCat[k]||0)+1});
   const catE=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   $('#sTop').textContent=catE[0]?catE[0][0]:'—';$('#sTopN').textContent=catE[0]?`${catE[0][1]}건 (${Math.round(catE[0][1]/done.length*100)}%)`:'';
   const withText=done.filter(x=>x.detail);
@@ -186,7 +188,7 @@ function render(){
   const tot={};done.forEach(x=>{for(const [p,t] of Object.entries(x.screenMs))tot[p]=(tot[p]||0)+t});
   bars($('#byScreen'),Object.entries(tot).map(([p,t])=>[PAGE[p]||p,t/done.length]).sort((a,b)=>b[1]-a[1]),secs);
   bars($('#byCat'),catE,v=>v+'건');
-  const byChoice={};done.forEach(x=>{if(!x.sel)return;const k=`${CAT[x.cat]||'기타'} · ${x.sel}`;byChoice[k]=(byChoice[k]||0)+1});
+  const byChoice={};done.forEach(x=>{if(!x.sel)return;const k=`${x.cat?catName(x):'기타'} · ${x.sel}`;byChoice[k]=(byChoice[k]||0)+1});
   bars($('#byChoice'),Object.entries(byChoice).sort((a,b)=>b[1]-a[1]).slice(0,8),v=>v+'건');
   const clicks={};shown().forEach(x=>x.events.filter(e=>e.type==='click').forEach(e=>{const k=CAT[e.label]||ACT[e.label]||e.label;clicks[k]=(clicks[k]||0)+1}));
   const ce=Object.entries(clicks).sort((a,b)=>b[1]-a[1]).slice(0,16);
@@ -195,7 +197,7 @@ function render(){
   document.querySelectorAll('th[data-k]').forEach(th=>{th.classList.toggle('sorted',th.dataset.k===sortKey);th.classList.toggle('asc',th.dataset.k===sortKey&&asc)});
   const r=rows(), dash='<span class="muted">—</span>';
   $('#rows').innerHTML=r.length?r.map(x=>{
-    const main=`<tr class="row" data-id="${esc(x.id)}"><td>${esc(dt(x.at))}</td><td><b>${esc(x.participant)}</b></td><td>${esc(x.car)}</td><td class="${x.success?'good':'bad'}">${x.result}</td><td>${secs(x.dur)}</td><td>${x.clicks}회</td><td>${x.screens}개</td><td>${x.cat?`<span class="cat ${x.cat==='urgent'?'urgent':''}">${esc(CAT[x.cat]||x.cat)}</span>`:dash}</td><td>${esc(x.sel)||dash}</td><td>${esc(x.role)||dash}</td><td class="text">${x.detail?esc(x.detail):dash}</td><td>${x.typing?secs(x.typing):dash}</td><td>${x.photos===''?dash:x.photos+'장'}</td><td>${esc(x.feedback)||dash}</td></tr>`;
+    const main=`<tr class="row" data-id="${esc(x.id)}"><td>${esc(dt(x.at))}</td><td><b>${esc(x.participant)}</b></td><td>${esc(x.car)}</td><td class="${x.success?'good':'bad'}">${x.result}</td><td>${secs(x.dur)}</td><td>${x.clicks}회</td><td>${x.screens}개</td><td>${x.cat?`<span class="cat ${x.cat==='urgent'?'urgent':''}">${esc(catName(x))}</span>`:dash}</td><td>${esc(x.sel)||dash}</td><td>${esc(x.role)||dash}</td><td class="text">${x.detail?esc(x.detail):dash}</td><td>${x.typing?secs(x.typing):dash}</td><td>${x.photos===''?dash:x.photos+'장'}</td><td>${esc(x.feedback)||dash}</td></tr>`;
     const det=open===x.id?`<tr class="detail"><td colspan="14"><b>${esc(x.participant)} · 화면별 체류시간</b><div class="tags">${Object.entries(x.screenMs).map(([k,v])=>`<span class="tag">${esc(PAGE[k]||k)} ${secs(v)}</span>`).join('')||dash}</div><b>시간순 행동 기록</b>${x.events.map(e=>`<div class="event"><time>+${secs(e.elapsedMs)}</time><strong>${esc(e.type)}</strong><span>${esc(PAGE[e.label]||ACT[e.label]||e.label)}${e.screen?' <span class="muted">(화면: '+esc(PAGE[e.screen]||e.screen)+')</span>':''}</span></div>`).join('')}</td></tr>`:'';
     return main+det}).join(''):'<tr><td colspan="14" class="empty">조건에 맞는 기록이 없습니다.</td></tr>';
 }
@@ -222,7 +224,7 @@ $('#rows').addEventListener('click',e=>{const tr=e.target.closest('tr.row');if(!
 $('#csv').onclick=()=>{
   const f=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const head=['접수시각','참가자','칸','결과','소요시간(초)','클릭수','방문화면수','민원종류','선택지','역할','입력한글','글입력시간(초)','사진수','문자안내','화면별체류시간(초)','세션ID'];
-  const body=rows().map(x=>[new Date(x.at).toLocaleString('ko-KR'),x.participant,x.car,x.result,(x.dur/1000).toFixed(1),x.clicks,x.screens,CAT[x.cat]||x.cat,x.sel,x.role,x.detail,x.typing?(x.typing/1000).toFixed(1):'',x.photos,x.feedback,Object.entries(x.screenMs).map(([k,v])=>`${PAGE[k]||k} ${(v/1000).toFixed(1)}`).join(' / '),x.id].map(f).join(','));
+  const body=rows().map(x=>[new Date(x.at).toLocaleString('ko-KR'),x.participant,x.car,x.result,(x.dur/1000).toFixed(1),x.clicks,x.screens,x.cat?catName(x):'',x.sel,x.role,x.detail,x.typing?(x.typing/1000).toFixed(1):'',x.photos,x.feedback,Object.entries(x.screenMs).map(([k,v])=>`${PAGE[k]||k} ${(v/1000).toFixed(1)}`).join(' / '),x.id].map(f).join(','));
   const u=URL.createObjectURL(new Blob(['﻿'+[head.map(f).join(','),...body].join('\r\n')],{type:'text/csv;charset=utf-8'}));
   const a=document.createElement('a');a.href=u;a.download='hci6_평가기록.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
 };
