@@ -30,7 +30,7 @@
 .temp-card small{display:block;font-size:11px;font-weight:750;color:#435474}
 .temp-card b{display:block;font-size:27px;margin-top:4px;letter-spacing:-1px;color:#173886}
 .temp-card.rec{background:#f6f7fa}.temp-card.rec b{color:#36425e}
-.temp-diff{font-size:11px;color:#5a6782;margin-top:2px}
+.temp-diff{font-size:11px;color:#5a6782;margin-top:2px}.temp-diff.ok{color:#17803f;font-weight:750}.temp-diff.hi{color:#b9784a;font-weight:750}.temp-diff.lo{color:#5f8fb4;font-weight:750}.temp-card.rec{display:flex;flex-direction:column;justify-content:center;gap:7px}.rec-item b{font-size:15px!important;margin-top:1px!important;color:#7a8499!important;letter-spacing:-.3px!important}.rec-item small{color:#8a93a6!important}.rec-item.on b{font-size:27px!important;margin-top:4px!important;color:#36425e!important}.rec-item.on small{color:#435474!important}.rec-item+.rec-item{border-top:1px solid #e3e7ef;padding-top:7px}
 .info-note{margin:6px 2px 22px}
 .two-cats .mini-cat{min-height:118px}
 .choice-grid.three{grid-template-columns:1fr 1fr 1fr}
@@ -70,7 +70,7 @@ body[data-page="urgent"] .hero,body.urgent-done .hero{background:linear-gradient
 <div class="study-overlay off" id="demoOnce"><div class="study-intro"><span class="study-eyebrow">안내</span><h2>수업용 프로토타입</h2><p class="demo-once">HCI 6조 수업용 프로토타입이에요. <b>실제 민원은 접수되지 않으며</b>, 화면의 칸·온도 정보와 처리 단계는 시연용 예시예요.</p><button id="demoOk" type="button">확인</button><small class="app-ver"></small></div></div>
 <div class="study-overlay off" id="studyIntro"><div class="study-intro"><span class="study-eyebrow">HCI 6조 사용성 평가</span><h2>민원 접수 웹 체험</h2><p class="demo-once">수업용 프로토타입이에요. <b>실제 민원은 접수되지 않으며</b>, 화면의 칸·온도 정보와 처리 단계는 시연용 예시예요.</p><p>동의하면 클릭한 버튼, 화면 이동 경로, 화면별 체류시간, 과업 완료 여부, <b>접수한 민원 내용과 입력한 글</b>을 기록합니다.</p><p>입력칸에 이름이나 연락처 같은 개인정보는 쓰지 말아 주세요. 참여를 원하지 않으면 종료해 주세요.</p><label for="pid">참가자 코드</label><input id="pid" maxlength="24" placeholder="예: P01" autocomplete="off" value=""><button id="studyStart" type="button">동의하고 시작하기</button><small class="app-ver"></small></div></div>
 <script src="assets/config.js"></script>
-<script>const APP_VERSION='v2.3';document.querySelectorAll('.app-ver').forEach(e=>e.textContent='버전 '+APP_VERSION)</script>
+<script>const APP_VERSION='v2.6';document.querySelectorAll('.app-ver').forEach(e=>e.textContent='버전 '+APP_VERSION)</script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s),main=$('#main');
@@ -85,7 +85,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const carLabel=()=>`${C.line}호선 · ${carNo}호차 (${C.pos}번째 칸)`;
 const loc=()=>`<div class="location"><div class="line-circle" style="background:${LINE_COLOR[C.line]||'#28ab5d'}">${esc(C.line)}</div><div class="loc-text"><b>${esc(carLabel())}</b></div></div>`;
 const train=()=>{let cells='';for(let i=1;i<=C.cars;i++)cells+=`<span class="tc${i===C.pos?' me':''}${i===1?' head':''}">${i}</span>`;return `<div class="train" role="img" aria-label="${C.cars}칸 열차 중 ${C.pos}번째 칸"><div class="train-pin" style="--p:${C.pos};--n:${C.cars}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 22s7-7.2 7-12.5A7 7 0 0 0 5 9.5C5 14.8 12 22 12 22z" fill="#f07a2b"/><circle cx="12" cy="9.5" r="2.6" fill="#fff"/></svg></div><div class="train-cars" style="--n:${C.cars}">${cells}</div></div>`};
-const temps=()=>{const d=+(C.temp-RECOMMENDED_WINTER).toFixed(1);const diff=d===0?'권장 온도와 같아요':`권장보다 ${Math.abs(d)}°C ${d>0?'높아요':'낮아요'}`;return `<div class="temp-row"><div class="temp-card"><small>현재 객실 온도</small><b>${C.temp.toFixed(1)}°C</b><div class="temp-diff">${diff}</div></div><div class="temp-card rec"><small>겨울철 권장 난방 온도</small><b>${RECOMMENDED_WINTER}°C</b><div class="temp-diff">지하철 객실 기준</div></div></div>`};
+const temps=()=>{const m=new Date().getMonth()+1,season=(m>=5&&m<=9)?'summer':'winter',R=RECOMMENDED[season],t=C.temp;const ok=t>=R.min&&t<=R.max;const d=+(t>R.max?t-R.max:R.min-t).toFixed(1);const diff=ok?`${R.label}예요`:`권장보다 ${d}°C ${t>R.max?'높아요':'낮아요'}`,cls=ok?'ok':(t>R.max?'hi':'lo');const rec=k=>`<div class="rec-item ${k===season?'on':''}"><small>${RECOMMENDED[k].label}</small><b>${RECOMMENDED[k].min}~${RECOMMENDED[k].max}°C</b></div>`;return `<div class="temp-row"><div class="temp-card"><small>현재 객실 온도</small><b>${t.toFixed(1)}°C</b><div class="temp-diff ${cls}">${diff}</div></div><div class="temp-card rec">${rec(season)}</div></div>`};
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(window.tt);window.tt=setTimeout(()=>e.classList.add('hide'),2600)};
 const setHero=(title='탑승 중 민원 접수',desc='탑승 중인 객실의 불편을<br>바로 접수할 수 있어요.')=>{$('#heroTitle').innerText=title;$('#heroDesc').innerHTML=desc};
 const back=()=>`<button class="back" data-action="back">〈 처음 화면으로 돌아가기</button>`;
