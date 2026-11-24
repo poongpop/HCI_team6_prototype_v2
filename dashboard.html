@@ -116,8 +116,8 @@ tr.detail td{background:#fafcff;padding:14px 18px}
 const $=s=>document.querySelector(s);
 const KEY='ttota_hci_study_v3';
 const CAT={temperature:'온도조절',other:'기타 민원',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황'};
-const GRP={order:'질서저해',environment:'환경',env:'환경',announcement:'안내방송',facility:'시설물'};
-const catName=x=>x.cat==='other'&&x.group?`기타 · ${GRP[x.group]||x.group}`:x.cat==='environment'&&x.group&&x.group!=='env'?`환경민원 · ${GRP[x.group]||x.group}`:(CAT[x.cat]||x.cat);
+const GRP={order:'질서저해',environment:'환경',env:'환경',announcement:'안내방송',facility:'시설물',etc:'직접 입력'};
+const catName=x=>x.cat==='other'&&x.group?`기타 · ${GRP[x.group]||x.group}`:x.cat==='environment'&&x.group&&x.group!=='env'&&x.group!=='etc'?`환경민원 · ${GRP[x.group]||x.group}`:(CAT[x.cat]||x.cat);
 const PAGE={report:'메인',temperature:'온도조절',other:'기타 민원',environment:'환경민원',announcement:'안내방송',order:'질서저해',urgent:'긴급상황',done:'접수 완료',phone:'전화 안내',help:'이용 안내',block:'차단 화면'};
 const ACT={submit:'접수하기',back:'돌아가기',restart:'다른 민원 신고',phone:'전화 신고 안내',help:'이용 안내'};
 const NAV=/^(temperature|environment|announcement|order|urgent|submit|back|restart|home|report|car|help|phone)$/;
